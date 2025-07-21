@@ -1,0 +1,11 @@
+schemaVersion: 2.2.0
+metadata:
+  name: autonomous-ai-agent
+components:
+  - name: tools
+    container:
+      image: quay.io/okurinny/dev-tools:latest
+      memoryLimit: 10G
+      memoryRequest: 2G
+      cpuRequest: 1000m
+      cpuLimit: 5000m
