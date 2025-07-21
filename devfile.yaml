@@ -2,7 +2,7 @@ components:
   - name: ollama
     container:
       image: ollama/ollama:latest
-      memoryLimit: 16Gi  # More RAM needed for larger models
+      memoryLimit: 8Gi  # More RAM needed for larger models
       cpuLimit: 4000m
       endpoints:
         - name: ollama-api
