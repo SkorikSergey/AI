@@ -1,11 +1,18 @@
-schemaVersion: 2.2.0
-metadata:
-  name: autonomous-ai-agent
 components:
-  - name: tools
+  - name: ollama
     container:
-      image: quay.io/okurinny/dev-tools:latest
-      memoryLimit: 8G
-      memoryRequest: 2G
-      cpuRequest: 1000m
-      cpuLimit: 5000m
+      image: ollama/ollama:latest
+      memoryLimit: 16Gi  # More RAM needed for larger models
+      cpuLimit: 4000m
+      endpoints:
+        - name: ollama-api
+          targetPort: 11434
+          exposure: public
+      volumeMounts:
+        - name: ollama-data
+          path: /root/.ollama
+commands:
+  - id: pull-model
+    exec:
+      component: ollama
+      commandLine: ollama pull mistral
