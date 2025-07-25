@@ -39,11 +39,6 @@ components:
           value: "http://localhost:11434"  # Points to Ollama
         - name: OPENAI_API_KEY
           value: "ollama"  # (Not actually used, but required by some UIs)
-
-volumes:
-  - name: ollama-data
-    ephemeral: false  # Persist models between sessions
-
 commands:
   # Initial setup command (runs when workspace starts)
   - id: setup-ollama
