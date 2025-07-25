@@ -1,11 +1,68 @@
 schemaVersion: 2.2.0
 metadata:
-  name: autonomous-ai-agent
+  name: ollama-ai-workspace
+  attributes:
+    persistVolumes: true  # Ensure volumes persist between restarts
+
 components:
-  - name: tools
+  # Main Ollama service
+  - name: ollama-server
     container:
-      image: quay.io/okurinny/dev-tools:latest
-      memoryLimit: 8G
-      memoryRequest: 2G
-      cpuRequest: 1000m
-      cpuLimit: 5000m
+      image: ollama/ollama:latest
+      memoryLimit: 8Gi  # Minimum for 7B models (adjust as needed)
+      cpuLimit: 4000m
+      mountSources: false
+      endpoints:
+        - name: ollama-api
+          targetPort: 11434
+          exposure: public
+      volumeMounts:
+        - name: ollama-data
+          path: /root/.ollama
+      env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"  # Allow connections within the workspace
+
+  # Optional Web UI (like ChatGPT)
+  - name: chat-webui
+    container:
+      image: ghcr.io/mckaywrigley/chatbot-ui:main
+      memoryLimit: 512Mi
+      endpoints:
+        - name: chat-interface
+          targetPort: 3000
+          exposure: public
+      env:
+        - name: DEFAULT_MODEL
+          value: "mistral"  # Must match the model you pull
+        - name: OPENAI_API_HOST
+          value: "http://localhost:11434"  # Points to Ollama
+        - name: OPENAI_API_KEY
+          value: "ollama"  # (Not actually used, but required by some UIs)
+
+volumes:
+  - name: ollama-data
+    ephemeral: false  # Persist models between sessions
+
+commands:
+  # Initial setup command (runs when workspace starts)
+  - id: setup-ollama
+    exec:
+      component: ollama-server
+      commandLine: |
+        # Download a model (choose ONE):
+        ollama pull mistral       # 7B (Small, fast)
+        # ollama pull llama2      # 7B or 13B
+        # ollama pull deepseek-llm # If available
+        echo "Ollama setup complete!"
+
+  # Start the web UI
+  - id: start-webui
+    exec:
+      component: chat-webui
+      commandLine: npm run dev
+
+events:
+  postStart:
+    - setup-ollama
+    - start-webui
